@@ -118,7 +118,6 @@ def upload_file(file_name, bucket, object_name=None):
     try:
         response = s3_client.upload_file(file_name, bucket, object_name)
         print("File Successfully uploaded to S3 Bucket")
-        sys.exit(0)
 
     except ClientError as e:
         logging.error(e)
@@ -126,21 +125,24 @@ def upload_file(file_name, bucket, object_name=None):
         print(e)
         sys.exit(1)
 
-if __name__ == "__main__":
+def DataIngester(files):
 
-    file_path = input("Enter absolute file path")
+    index = 0
 
-    file_path = abs_path_check(file_path) #test to see if absolute path is inputted to avoid path issues due to relativity 
+    for index in range(0,len(files)):
+        curFile = os.getcwd()+"/"+files[index]
+        
+        file_path = abs_path_check(curFile) #test to see if absolute path is inputted to avoid path issues due to relativity 
     
-    file_at_path_check(file_path) #test to see if the file exists at the given path 
+        file_at_path_check(curFile) #test to see if the file exists at the given path 
 
-    file_name = os.path.basename(file_path)
-    file_extension_check(file_name) #test to ensure that file has only one, valid extension 
+        file_name = os.path.basename(curFile)
+        file_extension_check(curFile) #test to ensure that file has only one, valid extension 
 
-    file_empty_check(file_path) #test to see if file is empty 
+        file_empty_check(curFile) #test to see if file is empty 
 
-    bucket_name = input("Enter bucket name")
+        bucket_name = "" # insert bucket name before ecexution. Will be automated once bucket policy implementation is done 
 
-    bucket_exist_check(bucket_name) #test to see if bucket is present 
+        bucket_exist_check(bucket_name) #test to see if bucket is present 
 
-    upload_file(file_path,bucket_name,file_name) #upload file to bucket if all of the above criteria is met 
+        upload_file(file_path,bucket_name,file_name) #upload file to bucket if all of the above criteria is met""" 
