@@ -4,6 +4,8 @@ from botocore.exceptions import ClientError
 import sys
 import os
 
+from urllib3 import Retry
+
 def abs_path_check(path):
     """ Tests to see if the path inputted is absolute. If it is relative, gives the user one try to re-enter the path. 
     Terminates if second path inputted is also relative 
@@ -141,8 +143,10 @@ def DataIngester(files):
 
         file_empty_check(curFile) #test to see if file is empty 
 
-        bucket_name = "" # insert bucket name before ecexution. Will be automated once bucket policy implementation is done 
+        bucket_name = "raw-lambda-poc"
 
         bucket_exist_check(bucket_name) #test to see if bucket is present 
 
         upload_file(file_path,bucket_name,file_name) #upload file to bucket if all of the above criteria is met""" 
+
+    return

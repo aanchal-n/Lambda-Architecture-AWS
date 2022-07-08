@@ -1,0 +1,34 @@
+import json
+import urllib.parse
+import boto3
+
+print('Loading function')
+
+s3 = boto3.client('s3')
+s3_resource = boto3.resource('s3')
+
+def lambda_handler(event, context):
+    #print("Received event: " + json.dumps(event, indent=2))
+
+    # Get the object from the event and show its content type
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+    try:
+        response = s3.get_object(Bucket=bucket, Key=key)
+       
+        resp = s3.list_objects_v2(Bucket='refined-lambda-poc')
+        keys=[]
+        for obj in resp['Contents']:
+            if obj['Key'] != key:
+                existingObj = s3.get_object(Bucket=bucket,Key=obj['Key'])
+                print(obj['Key'])
+                if response['ETag'] == existingObj['ETag'] and response['ContentLength'] == existingObj['ContentLength']:
+                    print(key,"is a Duplicate")
+                    s3_resource.Object('refined-lambda-poc', key).delete()
+        
+        print("CONTENT TYPE: " + response['ContentType'])
+        return response['ContentType']
+    except Exception as e:
+        print(e)
+        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+        raise e
