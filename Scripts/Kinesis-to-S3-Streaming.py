@@ -3,7 +3,6 @@ import logging
 import time
 import boto3
 from botocore.exceptions import ClientError
-import firehose_to_s3 as fh_s3
 
 def get_kinesis_arn(stream_name):
     """Retrieve the ARN for a Kinesis data stream
@@ -48,20 +47,44 @@ def wait_for_active_kinesis_stream(stream_name):
         time.sleep(5)
 
 def get_firehose_arn(firehose_name):
-    """Retrieve the ARN for a Kinesis data stream
+    """Retrieve the ARN of the specified Firehose
 
-    :param stream_name: Kinesis data stream name
-    :return: ARN of stream. If error, return None.
+    :param firehose_name: Firehose stream name
+    :return: If the Firehose stream exists, return ARN, else None
     """
 
-    # Retrieve stream info
+    # Try to get the description of the Firehose
     firehose_client = boto3.client('firehose')
     try:
-        result = firehose_client.describe_stream_summary(StreamName=firehose_name)
+        result = firehose_client.describe_delivery_stream(DeliveryStreamName=firehose_name)
     except ClientError as e:
         logging.error(e)
         return None
-    return result['StreamDescriptionSummary']['StreamARN']
+    return result['DeliveryStreamDescription']['DeliveryStreamARN']
+
+def wait_for_active_firehose(firehose_name):
+    """Wait until the Firehose delivery stream is active
+
+    :param firehose_name: Name of Firehose delivery stream
+    :return: True if delivery stream is active. Otherwise, False.
+    """
+
+    # Wait until the stream is active
+    firehose_client = boto3.client('firehose')
+    while True:
+        try:
+            # Get the stream's current status
+            result = firehose_client.describe_delivery_stream(DeliveryStreamName=firehose_name)
+        except ClientError as e:
+            logging.error(e)
+            return False
+        status = result['DeliveryStreamDescription']['DeliveryStreamStatus']
+        if status == 'ACTIVE':
+            return True
+        if status == 'DELETING':
+            logging.error(f'Firehose delivery stream {firehose_name} is being deleted.')
+            return False
+        time.sleep(2)
 
 
 def main():
@@ -93,7 +116,7 @@ def main():
     logging.info(f'Created Firehose delivery stream to S3: {firehose_arn}')
 
     # Wait for the Firehose to become active
-    if not fh_s3.wait_for_active_firehose(firehose_name):
+    if not wait_for_active_firehose(firehose_name):
         exit(1)
     logging.info('Firehose stream is active')
 
