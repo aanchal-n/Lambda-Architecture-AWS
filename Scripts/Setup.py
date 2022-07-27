@@ -8,10 +8,12 @@ from botocore.exceptions import ClientError
 import logging
 
 def create_iam_role(roleName):
-    # params
-    # roleName: name of the new role being created for lambda architecture components 
-    # Usage 
-    # Creates a new role and attachs policies related to S3, Glue, Kinesis and Lambda 
+    """
+    Creates a new role and attachs policies related to S3, Glue, Kinesis and Lada
+    
+    :param roleName: name of the new role being created for lambda architecture components 
+    :returns: http response from role creation which can be further used to verify successful creation of the IAM role 
+    """ 
 
     client = boto3.client('iam')
 
@@ -53,10 +55,12 @@ def create_iam_role(roleName):
     return response
 
 def create_bucket(bucketName):
-    # params
-    # bucketName: unique bucket name in the region 
-    # Usage
-    # Uses the boto3 client to create a bucket 
+    """ 
+    Uses the boto3 client to create a bucket using the given name 
+    
+    :param bucketName: unique bucket name in the region 
+    :return: http response of bucket creation
+    """
 
     client = boto3.client("s3", region_name = "ap-south-1")
 
@@ -71,10 +75,12 @@ def create_bucket(bucketName):
     return response
 
 def create_glue_database(dbName):
-    # params
-    # dbName: the name of the database to catalog all glue tables for connecting to glue studio, athena, quicksight, redshift, etc
-    # usage 
-    # uses the boto3 client to create a Database to store tables of crawled s3 buckets 
+    """"
+    Uses the boto3 client to create a Database to store tables of crawled s3 buckets
+    
+    :param dbName: the name of the database to catalog all glue tables for connecting to glue studio, athena, quicksight, redshift, etc
+    :returns: http response of database creation   
+    """
 
     client = boto3.client('glue')
 
@@ -91,13 +97,15 @@ def create_glue_database(dbName):
     return response
 
 def create_crawler(crawlerName, iamRole, dbName, bucketName):
-    # params 
-    # crawlerName: unique name for cralwer 
-    # iamRole: Role assumed to create crawler (has to have aws managed GlueServiceRole attached
-    # dbName: the database where the tables generated are stored 
-    # bucketName: source of data whose files are to be crawled to generate tables 
-    # usage 
-    # uses the parameters to create crawlers to generate tables to monitor schema changes 
+    """
+    Uses the parameters to create crawlers to generate tables to monitor schema changes 
+    
+    :param crawlerName: unique name for crawler 
+    :param iamRole: Role assumed to create crawler (has to have aws managed GlueServiceRole attached
+    :param dbName: the database where the tables generated are stored 
+    :param bucketName: source of data whose files are to be crawled to generate tables 
+    :returns: http response of crawler creation
+    """
 
     client = boto3.client('glue')
 
@@ -119,11 +127,13 @@ def create_crawler(crawlerName, iamRole, dbName, bucketName):
     return response 
 
 def ingest_glue_script(bucketName):
-    # params
-    # bucketName: String consisting of bucket name to store glue scripts
-    # usage
-    # scans the current working directory for .py files starting with glue to indicate scripts for glue jobs 
-    # compares with current contents of s3 bucket to avoid duplication of script before uploading to a bucket 
+    """
+    Scans the current working directory for .py files starting with glue to indicate scripts for glue jobs 
+    Compares with current contents of s3 bucket to avoid duplication of script before uploading to a bucket 
+    
+    :param bucketName: String consisting of bucket name to store glue scripts
+    :returns: None
+    """
 
     dir = os.curdir
     onlyfiles = [f for f in listdir(dir) if isfile(join(dir, f))]
@@ -166,13 +176,15 @@ def ingest_glue_script(bucketName):
     return 
 
 def create_glue_job(jobName, iamRole, scriptPath, pythonVer):
-    # params
-    # jobName: String consisting of unique job name 
-    # iamRole: predefined IAM role with glueService policy attached 
-    # scriptPath: location in s3 bucket where script is present 
-    # pythonVer: to specify the python version 
-    # usage
-    # uses the given parameters to create a new glue job 
+    """
+    Uses the given parameters to create a new glue job 
+     
+    :param jobName: String consisting of unique job name 
+    :param iamRole: predefined IAM role with glueService policy attached 
+    :param scriptPath: location in s3 bucket where script is present 
+    :param pythonVer: to specify the python version 
+    :returns: http response from glue job creation
+    """
 
     client = boto3.client('glue')
 
@@ -197,13 +209,12 @@ def create_glue_job(jobName, iamRole, scriptPath, pythonVer):
     return response
 
 def create_kinesis_stream(stream_name, num_shards=1):
-    # params
-    # stream_name: Data stream name
-    # num_shards: Number of stream shards
-    # usage
-    # Create a Kinesis data stream and returns true if stream was started 
+    """Create a Kinesis data stream
 
-    # Create the data stream
+    :param stream_name: Data stream name
+    :param num_shards: Number of stream shards
+    :return: True if creation of stream was started. Otherwise, False.
+    """
     kinesis_client = boto3.client('kinesis')
 
     try:
