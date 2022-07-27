@@ -84,15 +84,8 @@ def main():
 
     # Retrieve the Kinesis stream's ARN
     kinesis_arn = get_kinesis_arn(kinesis_name)
-
-    # Create a Firehose delivery stream as a consumer of the Kinesis stream
-    firehose_src_type = 'KinesisStreamAsSource'
-    #firehose_arn = fh_s3.create_firehose_to_s3(firehose_name,
-                                               #bucket_arn,
-                                               #iam_role_name,
-                                               #firehose_src_type,
-                                               #kinesis_arn)
-    firehose_arn = "arn:aws:firehose:ap-south-1:581950338244:deliverystream/firehose_kinesis_test_stream"
+    
+    firehose_arn = get_firehose_arn(firehose_name)
 
     if firehose_arn is None:
         exit(1)
