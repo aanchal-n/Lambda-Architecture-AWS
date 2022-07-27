@@ -10,6 +10,7 @@ def get_kinesis_arn(stream_name):
 
     :param stream_name: Kinesis data stream name
     :return: ARN of stream. If error, return None.
+    dummy comment
     """
 
     # Retrieve stream info
