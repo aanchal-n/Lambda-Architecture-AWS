@@ -143,21 +143,39 @@ def main():
         time.sleep(100)
         logging.info('Putting next 1000 records')
 
-        for i in range(1000):
-            # Read a record of test data
-            line = next(f)
+        batch = [{'Data': next(f)} for x in range(1000)]
 
-            # Extract the "sector" value to use as the partition key
-            sector = "flt"
+        try:
+            result = kinesis_client.put_records(StreamName=kinesis_name,
+                                                Records=batch)
+        except ClientError as e:
+            logging.error(e)
+            exit(1)
 
-            # Put the record into the stream
-            try:
-                result = kinesis_client.put_record(StreamName=kinesis_name,
-                                          Data=line,
-                                          PartitionKey=sector)
-            except ClientError as e:
-                logging.error(e)
-                exit(1)
+
+        num_failures = result['FailedRecordCount']
+        '''
+        # Test: Simulate a failed record
+        num_failures = 1
+        failed_rec_index = 3
+        result['Records'][failed_rec_index]['ErrorCode'] = 404
+        '''
+        if num_failures:
+            # Resend failed records
+            logging.info(f'Resending {num_failures} failed records')
+            rec_index = 0
+            for record in result['Records']:
+                if 'ErrorCode' in record:
+                    # Resend the record
+                    kinesis_client.put_record(StreamName=kinesis_name,
+                                              Data=batch[rec_index]['Data'],
+                                              PartitionKey=batch[rec_index]['PartitionKey'])
+
+                    # Stop if all failed records have been resent
+                    num_failures -= 1
+                    if not num_failures:
+                        break
+                rec_index += 1
 
     logging.info('Test data sent to Kinesis stream')
 
