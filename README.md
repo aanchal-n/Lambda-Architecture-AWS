@@ -13,6 +13,8 @@ Lambda Architecture was an ETL Pipeline developed to unify batch processing and 
 ## Current Architecture 
 Lambda Architecture is developed in three main layers: Batch, Streaming and Serving. The Batch and Streaming layers work independently and can be scaled depending on the incoming workload. The serving layer is a common dashboard to run queries and generate views on data collated from both sources as well as a visualisation dashboard. The below figure details the current workflow of the system. 
 
+![lambdaArch](https://github.com/aanchal-n/Lambda-Architecture-AWS/blob/main/Assets/aws-lambda-architecture.png)
+
 ### Batch Layer 
 
 
