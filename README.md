@@ -35,9 +35,11 @@ The Kinesis data stream is also connected to Kinesis Analytics. Kinesis Analytic
 To begin with, you can either clone this repository on your local system or download the zip file. Followed by which you run the below setup procedures. 
 ## Setup 
 To access the AWS services, you require the boto3 package. Run the below command to automate this installation. 
+
 ``` pip3 install -r requirements.txt```
 
 Followed by this, we need to setup our AWS services such as the IAM Role, S3 Buckets, Glue Crawlers and Jobs, and Kinesis Data Streams and Firehose. To automate this deployment, run the below command. 
+
 ```python3 setup.py```
 
 The current version of this project relies on the user adding in their lambda functions and triggers to the AWS pipeline. This feature will be added soon. 
